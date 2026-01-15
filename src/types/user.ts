@@ -4,6 +4,7 @@ export interface AppUser {
   age: number;
   address: string;
   username: string;
+  passwordHash?: string;
 }
 
 export interface CreateUserPayload {

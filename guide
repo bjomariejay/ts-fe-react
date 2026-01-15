@@ -308,5 +308,3 @@ to create user with crud function ( add create user page > create hooks useUsers
         export const deleteUser = async (id: number): Promise<void> => {
           await axios.delete(`${API_URL}/users/${id}`);
         };
-
-   With the API helpers in place, the `useUsers` hook can call them and the Manage Users page will have full CRUD support.

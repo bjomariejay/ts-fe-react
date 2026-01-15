@@ -123,6 +123,7 @@ const ManageUsersPage = ({ onBackToLogin }: ManageUsersPageProps) => {
                     <th className="px-4 py-2 font-semibold">Username</th>
                     <th className="px-4 py-2 font-semibold">Age</th>
                     <th className="px-4 py-2 font-semibold">Address</th>
+                    <th className="px-4 py-2 font-semibold">Password (hash)</th>
                     <th className="px-4 py-2 font-semibold">Actions</th>
                   </tr>
                 </thead>
@@ -133,6 +134,9 @@ const ManageUsersPage = ({ onBackToLogin }: ManageUsersPageProps) => {
                       <td className="px-4 py-2 text-slate-600">{user.username}</td>
                       <td className="px-4 py-2 text-slate-600">{user.age}</td>
                       <td className="px-4 py-2 text-slate-600">{user.address}</td>
+                      <td className="px-4 py-2 font-mono text-xs text-slate-500 break-all">
+                        {user.passwordHash ?? "(not available)"}
+                      </td>
                       <td className="px-4 py-2">
                         <div className="flex flex-wrap gap-2">
                           <button
