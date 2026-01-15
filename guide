@@ -1,0 +1,28 @@
+
+add border color
+- border-[1px] border-red-500
+
+add border radius
+- rounded-lg
+
+add shadow
+- shadow-lg
+
+add transition
+- transition-all duration-300 ease-in-out
+
+add opacity
+- opacity-50
+
+add cursor
+- cursor-pointer
+
+add z-index
+- z-10
+
+add transform
+- transform scale-150
+
+
+add bg color
+- bg-gradient-to-br from-violet-600 to-blue-600
