@@ -5,9 +5,10 @@ interface LoginPageProps {
   error: string;
   isLoading: boolean;
   onInputChange?: () => void;
+  onSignUpClick: () => void;
 }
 
-const LoginPage = ({ onLogin, error, isLoading, onInputChange }: LoginPageProps) => {
+const LoginPage = ({ onLogin, error, isLoading, onInputChange, onSignUpClick }: LoginPageProps) => {
   const { form, handleSubmit, handleFieldChange } = useLoginForm({
     onSubmit: onLogin,
     onInputChange,
@@ -50,9 +51,16 @@ const LoginPage = ({ onLogin, error, isLoading, onInputChange }: LoginPageProps)
         >
           {isLoading ? "Signing in..." : "Login"}
         </button>
-        <p className="text-center text-xs text-slate-500">
-          Use a username/password from the users table.
-        </p>
+        <div className="text-center text-xs text-slate-500">
+          <p>Use a username/password from the users table.</p>
+          <button
+            type="button"
+            onClick={onSignUpClick}
+            className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Need an account? Create a user
+          </button>
+        </div>
       </form>
     </div>
   );

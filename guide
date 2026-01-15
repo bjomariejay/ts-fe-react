@@ -1,28 +1,108 @@
 
-add border color
-- border-[1px] border-red-500
-
-add border radius
-- rounded-lg
-
-add shadow
-- shadow-lg
-
-add transition
-- transition-all duration-300 ease-in-out
-
-add opacity
-- opacity-50
-
-add cursor
-- cursor-pointer
-
-add z-index
-- z-10
-
-add transform
-- transform scale-150
 
 
-add bg color
-- bg-gradient-to-br from-violet-600 to-blue-600
+-------------------------------------------------------------
+to login user ( create login page > create hooks useAuth > create api auth.api )
+-------------------------------------------------------------
+
+1. create the login page first `src/pages/LoginPage.tsx`
+
+        import { FormEvent, useState } from "react";
+
+        interface LoginPageProps {
+          onLogin: (username: string, password: string) => Promise<void>;
+        }
+
+        const LoginPage = ({ onLogin }: LoginPageProps) => {
+          const [username, setUsername] = useState("");
+          const [password, setPassword] = useState("");
+
+          const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            await onLogin(username, password);
+          };
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <label>
+                Username
+                <input value={username} onChange={e => setUsername(e.target.value)} />
+              </label>
+              <label>
+                Password
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+              </label>
+              <button type="submit">Login</button>
+            </form>
+          );
+        };
+
+        export default LoginPage;
+
+   The production component in this project adds styles, error handling, loading state, and a “Create user” CTA, but start with the simple username/password/login button flow above.
+
+2. after the UI exists, build the auth hook `src/hooks/useAuth.ts`
+
+        import { useState } from "react";
+        import { login as loginRequest } from "../api/auth.api";
+        import { AuthenticatedUser } from "../types/auth";
+
+        export const useAuth = () => {
+          const [user, setUser] = useState<AuthenticatedUser | null>(null);
+          const [error, setError] = useState("");
+          const [isLoading, setIsLoading] = useState(false);
+
+          const login = async (username: string, password: string) => {
+            setIsLoading(true);
+            setError("");
+            try {
+              const response = await loginRequest({ username, password });
+              if (response.success && response.user) {
+                setUser(response.user);
+                return { success: true };
+              }
+              setError(response.message ?? "Unable to login");
+              return { success: false };
+            } catch {
+              setError("Login failed. Please try again.");
+              return { success: false };
+            } finally {
+              setIsLoading(false);
+            }
+          };
+
+          const logout = () => setUser(null);
+          const clearError = () => setError("");
+
+          return { user, login, logout, error, clearError, isLoading };
+        };
+
+3. lastly, hook the API transport `src/api/auth.api.ts`
+
+        import axios from "axios";
+
+        const API_URL = "http://localhost:5000/api";
+
+        export interface LoginPayload {
+          username: string;
+          password: string;
+        }
+
+        export interface LoginResponse {
+          success: boolean;
+          user?: {
+            id: number;
+            name: string;
+            age: number;
+            address: string;
+            username: string;
+          };
+          message?: string;
+        }
+
+        export const login = async (payload: LoginPayload) => {
+          const response = await axios.post<LoginResponse>(`${API_URL}/login`, payload);
+          return response.data;
+        };
+
+
