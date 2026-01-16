@@ -1,23 +1,21 @@
-import axios from "axios";
 import { AppUser, CreateUserPayload, UpdateUserPayload } from "../types/user";
-
-const API_URL = "http://localhost:5000/api";
+import { httpClient } from "./httpClient";
 
 export const getUsers = async (): Promise<AppUser[]> => {
-    const res = await axios.get<AppUser[]>(`${API_URL}/users`);
+    const res = await httpClient.get<AppUser[]>("/users");
     return res.data;
 };
 
 export const createUser = async (user: CreateUserPayload): Promise<AppUser> => {
-    const res = await axios.post<AppUser>(`${API_URL}/users`, user);
+    const res = await httpClient.post<AppUser>("/users", user);
     return res.data;
 };
 
 export const deleteUser = async (id: number): Promise<void> => {
-    await axios.delete(`${API_URL}/users/${id}`);
+    await httpClient.delete(`/users/${id}`);
 };
 
 export const updateUser = async (id: number, data: UpdateUserPayload): Promise<AppUser> => {
-    const res = await axios.put<AppUser>(`${API_URL}/users/${id}`, data);
+    const res = await httpClient.put<AppUser>(`/users/${id}`, data);
     return res.data;
 };

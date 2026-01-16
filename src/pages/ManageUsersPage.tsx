@@ -1,10 +1,10 @@
 import { useUsers } from "../hooks/useUsers";
 
 interface ManageUsersPageProps {
-  onBackToLogin: () => void;
+  onBack?: () => void;
 }
 
-const ManageUsersPage = ({ onBackToLogin }: ManageUsersPageProps) => {
+const ManageUsersPage = ({ onBack }: ManageUsersPageProps) => {
   const {
     users,
     form,
@@ -25,14 +25,14 @@ const ManageUsersPage = ({ onBackToLogin }: ManageUsersPageProps) => {
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold text-slate-900">Create a User</h1>
-            <p className="text-sm text-slate-500">Add a record below and then return to the login page.</p>
+            <h1 className="text-3xl font-semibold text-slate-900">Manage Users</h1>
+            <p className="text-sm text-slate-500">View, create, update, and delete accounts. This area now requires you to be signed in.</p>
           </div>
           <button
             className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-500 hover:text-blue-600"
-            onClick={onBackToLogin}
+            onClick={onBack ?? (() => window.history.back())}
           >
-            Back to Login
+            Back
           </button>
         </div>
 

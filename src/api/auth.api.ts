@@ -1,25 +1,43 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api";
+import { AuthenticatedUser } from "../types/auth";
+import { httpClient } from "./httpClient";
 
 export interface LoginPayload {
     username: string;
     password: string;
 }
 
-export interface LoginResponse {
+export interface SignupPayload {
+    name: string;
+    age: number;
+    address: string;
+    username: string;
+    password: string;
+}
+
+export interface AuthSuccessResponse {
     success: boolean;
-    user?: {
-        id: number;
-        name: string;
-        age: number;
-        address: string;
-        username: string;
-    };
+    user?: AuthenticatedUser;
+    token?: string;
+    message?: string;
+}
+
+export interface CurrentUserResponse {
+    success: boolean;
+    user?: AuthenticatedUser;
     message?: string;
 }
 
 export const login = async (payload: LoginPayload) => {
-    const response = await axios.post<LoginResponse>(`${API_URL}/login`, payload);
+    const response = await httpClient.post<AuthSuccessResponse>("/login", payload);
+    return response.data;
+};
+
+export const signup = async (payload: SignupPayload) => {
+    const response = await httpClient.post<AuthSuccessResponse>("/signup", payload);
+    return response.data;
+};
+
+export const getCurrentUser = async () => {
+    const response = await httpClient.get<CurrentUserResponse>("/me");
     return response.data;
 };

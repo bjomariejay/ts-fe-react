@@ -308,3 +308,101 @@ to create user with crud function ( add create user page > create hooks useUsers
         export const deleteUser = async (id: number): Promise<void> => {
           await axios.delete(`${API_URL}/users/${id}`);
         };
+
+
+-------------------------------------------------------------
+Protected routes + API tokens with JWT  (what changed)
+-------------------------------------------------------------
+
+0. New dependencies
+       - Installed `react-router-dom` + `@types/react-router-dom` for client routing/protected routes.
+       - Added a shared Axios instance to inject the JWT automatically.
+
+1. Token storage helper (`src/utils/authStorage.ts`)
+       - Wrapper around `localStorage` so we can persist / clear the token.
+       ```ts
+       const TOKEN_STORAGE_KEY = "auth_token";
+       export const getStoredToken = () => localStorage.getItem(TOKEN_STORAGE_KEY);
+       export const persistToken = (token: string) => localStorage.setItem(TOKEN_STORAGE_KEY, token);
+       export const clearStoredToken = () => localStorage.removeItem(TOKEN_STORAGE_KEY);
+       ```
+
+2. Axios client with interceptors (`src/api/httpClient.ts`)
+       - Reads the stored token and attaches `Authorization: Bearer ...` on every request.
+       - Listens for 401 responses, clears storage, and emits a `window` event so the UI can log the user out.
+       ```ts
+       import axios, { AxiosHeaders } from "axios";
+       import { clearStoredToken, getStoredToken } from "../utils/authStorage";
+
+       export const httpClient = axios.create({ baseURL: process.env.REACT_APP_API_URL ?? "http://localhost:5000/api" });
+
+       httpClient.interceptors.request.use(config => {
+         const token = getStoredToken();
+         if (token) {
+           config.headers = AxiosHeaders.from(config.headers || {});
+           config.headers.set("Authorization", `Bearer ${token}`);
+         }
+         return config;
+       });
+
+       httpClient.interceptors.response.use(
+         response => response,
+         error => {
+           if (error?.response?.status === 401) {
+             clearStoredToken();
+             window.dispatchEvent(new Event("auth:unauthorized"));
+           }
+           return Promise.reject(error);
+         }
+       );
+       ```
+
+3. Auth hook + context (`src/hooks/useAuth.ts` + `src/context/AuthContext.tsx`)
+       - `useAuth` persists the token on login, restores the session on load via `/api/me`, and clears everything on logout/401.
+       - `AuthProvider` exposes the hook through React context so any component can check `user` state.
+       ```ts
+       const login = async (username: string, password: string) => {
+         const response = await loginRequest({ username, password });
+         if (response.success && response.user && response.token) {
+           persistToken(response.token);
+           setUser(response.user);
+         }
+       };
+
+       useEffect(() => {
+         const restoreSession = async () => {
+           const token = getStoredToken();
+           if (!token) return setIsBootstrapping(false);
+           try {
+             const response = await getCurrentUser();
+             response.success && response.user ? setUser(response.user) : clearStoredToken();
+           } finally {
+             setIsBootstrapping(false);
+           }
+         };
+         restoreSession();
+       }, []);
+       ```
+
+4. Routing + protected UI (`src/App.tsx`, `src/components/ProtectedRoute.tsx`, `src/pages/SignupPage.tsx`, `src/pages/ManageUsersPage.tsx`)
+       - Swapped to `react-router-dom` so `/login`, `/signup`, `/dashboard`, `/manage-users` are real routes.
+       - `ProtectedRoute` gates dashboard/admin pages until the auth hook finishes bootstrapping and confirms a user.
+       - Signup page logs the token to `console` for debugging.
+       ```tsx
+       <Routes>
+         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage ... />} />
+         <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
+         <Route path="/dashboard" element={
+           <ProtectedRoute>
+             <DashboardPage ... />
+           </ProtectedRoute>
+         } />
+         <Route path="/manage-users" element={
+           <ProtectedRoute>
+             <ManageUsersPage ... />
+           </ProtectedRoute>
+         } />
+       </Routes>
+       ```
+
+Result: once you log in or sign up, the frontend stores the JWT, injects it into every API call, auto-logs out on 401, and prevents navigating to protected screens until a valid token/user is present.
